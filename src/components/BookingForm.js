@@ -48,7 +48,7 @@ const BookingForm = ({ onBookingSuccess }) => {
         if (date && startTime && endTime) {
             const fetchAvailableCars = async () => {
                 try {
-                    const { data } = await axios.get('/api/bookings');
+                    const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/bookings`);
                     const bookedCars = data.filter(
                         booking => booking.date === date &&
                         (booking.startTime < endTime && booking.endTime > startTime)
@@ -83,7 +83,7 @@ const BookingForm = ({ onBookingSuccess }) => {
         }
 
         try {
-            await axios.post('/api/bookings', {
+            await axios.post(`${process.env.REACT_APP_API_URL}/bookings`, {
                 date,
                 startTime,
                 endTime,

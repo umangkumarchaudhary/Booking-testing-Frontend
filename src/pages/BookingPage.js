@@ -9,12 +9,13 @@ const BookingPage = () => {
 
     const fetchBookings = async () => {
         try {
-            const { data } = await axios.get('/api/bookings');
+            const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/bookings`);
             setBookings(data);
         } catch (error) {
             console.error('Error fetching bookings:', error);
         }
     };
+
 
     useEffect(() => {
         fetchBookings(); // Fetch bookings when the component mounts

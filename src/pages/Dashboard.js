@@ -11,7 +11,7 @@ const Dashboard = () => {
         const fetchBookings = async () => {
             try {
                 const formattedDate = date.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
-                const { data } = await axios.get(`/api/bookings?date=${formattedDate}`);
+                const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/bookings?date=${formattedDate}`);
                 setBookings(data);
             } catch (error) {
                 console.error('Error fetching bookings:', error);
