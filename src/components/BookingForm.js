@@ -13,7 +13,7 @@ const BookingForm = ({ onBookingSuccess }) => {
         'E220d', 'E350d', 'S350d', 'S450'
     ]);
     const [timeOptions, setTimeOptions] = useState([]);
-    const [loading, setLoading] = useState(false); // Added loading state
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const generateTimeOptions = () => {
@@ -52,7 +52,7 @@ const BookingForm = ({ onBookingSuccess }) => {
         if (date && startTime && endTime) {
             const fetchAvailableCars = async () => {
                 try {
-                    const { data } = await axios.get('/api/bookings');
+                    const { data } = await axios.get('https://booking-testing-backend.onrender.com/api/bookings');
                     const bookedCars = data.filter(
                         booking => booking.date === date &&
                         (booking.startTime < endTime && booking.endTime > startTime)
@@ -82,21 +82,21 @@ const BookingForm = ({ onBookingSuccess }) => {
             return;
         }
 
-        setLoading(true); // Start loading animation
+        setLoading(true);
 
         try {
-            await axios.post('/api/bookings', {
+            await axios.post('https://booking-testing-backend.onrender.com/api/bookings', {
                 date,
                 startTime,
                 endTime,
                 carModel,
                 consultantName,
             });
-            setLoading(false); // Stop loading animation
+            setLoading(false);
             alert('Booking successful!');
-            onBookingSuccess();  // Trigger the callback to update the booking list
+            onBookingSuccess();
         } catch (error) {
-            setLoading(false); // Stop loading animation
+            setLoading(false);
             console.error('Error submitting booking:', error);
             alert('Car is already booked for this time.');
         }
@@ -111,7 +111,7 @@ const BookingForm = ({ onBookingSuccess }) => {
                     value={date} 
                     onChange={(e) => setDate(e.target.value)} 
                     required 
-                    min={new Date().toISOString().split('T')[0]} // Disable past dates
+                    min={new Date().toISOString().split('T')[0]} 
                 />
             </div>
             <div className="form-group">
@@ -120,7 +120,7 @@ const BookingForm = ({ onBookingSuccess }) => {
                     value={startTime} 
                     onChange={(e) => setStartTime(e.target.value)} 
                     required
-                    disabled={!date} // Disable until date is selected
+                    disabled={!date}
                 >
                     <option value="">Select Start Time</option>
                     {timeOptions.map((time, index) => (
@@ -134,7 +134,7 @@ const BookingForm = ({ onBookingSuccess }) => {
                     value={endTime} 
                     onChange={(e) => setEndTime(e.target.value)} 
                     required
-                    disabled={!startTime} // Disable until start time is selected
+                    disabled={!startTime}
                 >
                     <option value="">Select End Time</option>
                     {timeOptions.filter(time => time > startTime).map((time, index) => (
@@ -171,7 +171,7 @@ const BookingForm = ({ onBookingSuccess }) => {
             <button type="submit" disabled={loading}>
                 {loading ? 'Booking...' : 'Book Test Drive'}
             </button>
-            {loading && <div className="spinner"></div>} {/* Loading spinner */}
+            {loading && <div className="spinner"></div>}
         </form>
     );
 };
