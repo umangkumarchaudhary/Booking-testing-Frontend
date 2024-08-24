@@ -8,8 +8,12 @@ const BookingForm = ({ onBookingSuccess }) => {
     const [endTime, setEndTime] = useState('');
     const [carModel, setCarModel] = useState('');
     const [consultantName, setConsultantName] = useState('');
+    const [carOptions, setCarOptions] = useState([
+        'A200', 'A200d', 'C200', 'C220d', 'E200', 
+        'E220d', 'E350d', 'S350d', 'S450'
+    ]);
     const [timeOptions, setTimeOptions] = useState([]);
-    const [availableCars, setAvailableCars] = useState([]);
+    const [loading, setLoading] = useState(false); // Added loading state
 
     useEffect(() => {
         const generateTimeOptions = () => {
@@ -36,7 +40,7 @@ const BookingForm = ({ onBookingSuccess }) => {
                 }
             }
 
-            setTimeOptions(options); // Update timeOptions state
+            setTimeOptions(options);
         };
 
         if (date) {
@@ -48,18 +52,14 @@ const BookingForm = ({ onBookingSuccess }) => {
         if (date && startTime && endTime) {
             const fetchAvailableCars = async () => {
                 try {
-                    const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/bookings`);
+                    const { data } = await axios.get('/api/bookings');
                     const bookedCars = data.filter(
                         booking => booking.date === date &&
                         (booking.startTime < endTime && booking.endTime > startTime)
                     ).map(booking => booking.carModel);
-
-                    // Update available cars list
-                    setAvailableCars(prevOptions => 
-                        prevOptions.map(car => ({
-                            model: car,
-                            unavailable: bookedCars.includes(car)
-                        }))
+                    
+                    setCarOptions(prevOptions =>
+                        prevOptions.filter(car => !bookedCars.includes(car))
                     );
                 } catch (error) {
                     console.error('Error fetching bookings:', error);
@@ -67,7 +67,7 @@ const BookingForm = ({ onBookingSuccess }) => {
             };
             fetchAvailableCars();
         }
-    }, [date, startTime, endTime]); // Ensure these dependencies are included
+    }, [date, startTime, endTime]);
 
     const submitHandler = async (e) => {
         e.preventDefault();
@@ -82,17 +82,21 @@ const BookingForm = ({ onBookingSuccess }) => {
             return;
         }
 
+        setLoading(true); // Start loading animation
+
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/bookings`, {
+            await axios.post('/api/bookings', {
                 date,
                 startTime,
                 endTime,
                 carModel,
                 consultantName,
             });
+            setLoading(false); // Stop loading animation
             alert('Booking successful!');
             onBookingSuccess();  // Trigger the callback to update the booking list
         } catch (error) {
+            setLoading(false); // Stop loading animation
             console.error('Error submitting booking:', error);
             alert('Car is already booked for this time.');
         }
@@ -140,20 +144,10 @@ const BookingForm = ({ onBookingSuccess }) => {
             </div>
             <div className="form-group">
                 <label>Car Model</label>
-                <select 
-                    value={carModel} 
-                    onChange={(e) => setCarModel(e.target.value)} 
-                    required
-                >
+                <select value={carModel} onChange={(e) => setCarModel(e.target.value)} required>
                     <option value="">Select Car Model</option>
-                    {availableCars.map(({ model, unavailable }) => (
-                        <option 
-                            key={model} 
-                            value={model} 
-                            disabled={unavailable}
-                        >
-                            {model} {unavailable ? '(unavailable)' : ''}
-                        </option>
+                    {carOptions.map((car) => (
+                        <option key={car} value={car}>{car}</option>
                     ))}
                 </select>
             </div>
@@ -174,7 +168,10 @@ const BookingForm = ({ onBookingSuccess }) => {
                     <option value="Sushil">Sushil</option>
                 </select>
             </div>
-            <button type="submit">Book Test Drive</button>
+            <button type="submit" disabled={loading}>
+                {loading ? 'Booking...' : 'Book Test Drive'}
+            </button>
+            {loading && <div className="spinner"></div>} {/* Loading spinner */}
         </form>
     );
 };
