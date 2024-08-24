@@ -9,12 +9,13 @@ const BookingPage = () => {
 
     const fetchBookings = async () => {
         try {
-            const { data } = await axios.get(`https://booking-testing-backend.onrender.com/api/bookings`);
+            const { data } = await axios.get(`https://cors-anywhere.herokuapp.com/https://booking-testing-backend.onrender.com/api/bookings`);
             setBookings(data);
         } catch (error) {
             console.error('Error fetching bookings:', error);
         }
     };
+    
     
 
     useEffect(() => {

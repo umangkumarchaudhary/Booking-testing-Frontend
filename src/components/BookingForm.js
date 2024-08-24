@@ -59,7 +59,7 @@ const BookingForm = ({ onBookingSuccess }) => {
                     ).map(booking => booking.carModel);
                     
                     setCarOptions(prevOptions =>
-                        prevOptions.filter(car => !bookedCars.includes(car))
+                        prevOptions.map(car => bookedCars.includes(car) ? `${car} (unavailable)` : car)
                     );
                 } catch (error) {
                     console.error('Error fetching bookings:', error);
@@ -95,6 +95,7 @@ const BookingForm = ({ onBookingSuccess }) => {
             setLoading(false);
             alert('Booking successful!');
             onBookingSuccess();
+            fetchAvailableCars(); // Refresh available cars after booking
         } catch (error) {
             setLoading(false);
             console.error('Error submitting booking:', error);
@@ -147,7 +148,9 @@ const BookingForm = ({ onBookingSuccess }) => {
                 <select value={carModel} onChange={(e) => setCarModel(e.target.value)} required>
                     <option value="">Select Car Model</option>
                     {carOptions.map((car) => (
-                        <option key={car} value={car}>{car}</option>
+                        <option key={car} value={car.includes('(unavailable)') ? '' : car} disabled={car.includes('(unavailable)')}>
+                            {car}
+                        </option>
                     ))}
                 </select>
             </div>
