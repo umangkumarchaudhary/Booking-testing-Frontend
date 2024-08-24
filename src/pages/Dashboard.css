@@ -1,0 +1,41 @@
+.dashboard {
+    padding: 20px;
+}
+
+.calendar {
+    margin-bottom: 20px;
+}
+
+.graph {
+    margin-top: 20px;
+}
+
+.calendar {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.calendar th, .calendar td {
+    border: 1px solid #ccc;
+    text-align: center;
+    padding: 8px;
+}
+
+.calendar th {
+    background-color: #f4f4f4;
+}
+
+.time-slot {
+    height: 40px; /* Adjust height as needed */
+    position: relative;
+}
+
+.booking-block {
+    background-color: #4caf50;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
