@@ -1,17 +1,21 @@
+/* General form styles */
 form {
     display: flex;
     flex-direction: column;
-    max-width: 400px;
+    max-width: 90%;
+    width: 400px; /* Adjust width for larger screens */
     margin: 0 auto;
     padding: 20px;
-    background-image: url('/img/onetwo.jpg'); /* Add your background image here */
+    background-image: url('/img/onetwo.jpg'); /* Background image */
     background-size: cover;
     background-position: center;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(138, 4, 255, 0.1);
     position: relative;
+    animation: fadeIn 0.5s ease-in-out; /* Add fade-in animation */
 }
 
+/* Input and select styles */
 input[type="date"],
 input[type="time"],
 select {
@@ -20,10 +24,9 @@ select {
     font-size: 16px;
     border: 1px solid #ced4da;
     border-radius: 4px;
-}
-
-input[type="date"] {
-    margin-bottom: 15px;
+    color: #fff; /* White text color */
+    background-color: rgba(0, 0, 0, 0.5); /* Slightly transparent background */
+    transition: background-color 0.3s, border-color 0.3s, transform 0.3s; /* Smooth transition for background, border, and scale */
 }
 
 input[type="time"] {
@@ -41,8 +44,18 @@ select {
     font-size: 16px;
     border: 1px solid #ced4da;
     border-radius: 4px;
+    color: #fff; /* White text color */
+    background-color: rgba(0, 0, 0, 0.5); /* Slightly transparent background */
+    transition: background-color 0.3s, border-color 0.3s, transform 0.3s; /* Smooth transition for background, border, and scale */
 }
 
+select:hover {
+    background-color: rgba(0, 0, 0, 0.7); /* Darker background on hover */
+    border-color: #007bff; /* Highlight border color on hover */
+    transform: scale(1.05); /* Slightly enlarge dropdown on hover */
+}
+
+/* Button styles */
 button {
     padding: 10px 15px;
     font-size: 18px;
@@ -51,11 +64,13 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s; /* Added transform transition */
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* Added box-shadow transition */
 }
 
 button:hover {
     background-color: #0056b3;
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
 }
 
 button:disabled {
@@ -63,6 +78,7 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* Spinner styles */
 .spinner {
     position: absolute;
     top: 50%;
@@ -76,11 +92,13 @@ button:disabled {
     animation: spin 1s linear infinite;
 }
 
+/* Keyframes for spinner animation */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
+/* Form group styles */
 .form-group {
     margin-bottom: 15px;
 }
@@ -89,6 +107,7 @@ button:disabled {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+    color: #fff; /* White text color for labels */
 }
 
 .form-group input,
@@ -98,16 +117,30 @@ button:disabled {
     box-sizing: border-box;
     border: 1px solid #ccc;
     border-radius: 4px;
+    color: #fff; /* White text color */
+    background-color: rgba(0, 0, 0, 0.5); /* Slightly transparent background */
 }
 
-/* BookingForm.css */
-.clock-time-picker {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* Media queries for responsiveness */
+@media (max-width: 600px) {
+    form {
+        width: 100%;
+        padding: 15px;
+    }
+
+    input[type="time"] {
+        width: 100%;
+        display: block;
+        margin-right: 0;
+    }
 }
 
-.time-display {
-    margin-top: 10px;
-    font-size: 1.2em;
+/* Fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }

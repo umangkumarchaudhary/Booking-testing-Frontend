@@ -8,6 +8,7 @@ const BookingForm = ({ onBookingSuccess }) => {
     const [endTime, setEndTime] = useState('');
     const [carModel, setCarModel] = useState('');
     const [consultantName, setConsultantName] = useState('');
+    const [location, setLocation] = useState(''); // New state for location
     const [carOptions, setCarOptions] = useState([
         'A200', 'A200d', 'C200', 'C220d', 'E200', 
         'E220d', 'E350d', 'S350d', 'S450'
@@ -15,20 +16,18 @@ const BookingForm = ({ onBookingSuccess }) => {
     const [timeOptions, setTimeOptions] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Function to reset form state
     const resetForm = () => {
         setDate('');
         setStartTime('');
         setEndTime('');
         setCarModel('');
         setConsultantName('');
+        setLocation(''); // Reset location
     };
 
-    // Memoized fetchAvailableCars function using useCallback
     const fetchAvailableCars = useCallback(async () => {
         try {
             const { data } = await axios.get('https://booking-testing-backend.onrender.com/api/bookings');
-            
             const bookedCars = data.filter(booking => {
                 const bookingDate = booking.date;
                 const bookingStartTime = booking.startTime;
@@ -39,7 +38,6 @@ const BookingForm = ({ onBookingSuccess }) => {
                 const existingStart = new Date(`${bookingDate}T${bookingStartTime}`);
                 const existingEnd = new Date(`${bookingDate}T${bookingEndTime}`);
 
-                // Check if the selected time range overlaps with any existing bookings
                 return bookingDate === date && (
                     (selectedStart >= existingStart && selectedStart < existingEnd) || 
                     (selectedEnd > existingStart && selectedEnd <= existingEnd) || 
@@ -100,7 +98,6 @@ const BookingForm = ({ onBookingSuccess }) => {
     const submitHandler = async (e) => {
         e.preventDefault();
     
-        // Check if date and time fields are filled
         if (!date || !startTime || !endTime) {
             alert('Please fill in all date and time fields.');
             return;
@@ -108,15 +105,13 @@ const BookingForm = ({ onBookingSuccess }) => {
     
         const selectedDateTime = new Date(`${date}T${startTime}`);
         const currentDateTime = new Date();
-        currentDateTime.setSeconds(0, 0); // Reset seconds and milliseconds for accurate comparison
-    
-        // Check if selectedDateTime is in the past
+        currentDateTime.setSeconds(0, 0);
+
         if (selectedDateTime <= currentDateTime) {
             alert('You cannot book a car for a past time.');
             return;
         }
     
-        // Check if endTime is later than startTime
         if (startTime >= endTime) {
             alert('End time must be later than start time.');
             return;
@@ -131,12 +126,13 @@ const BookingForm = ({ onBookingSuccess }) => {
                 endTime,
                 carModel,
                 consultantName,
+                location, // Include location in the booking data
             });
             setLoading(false);
             alert('Booking successful!');
             onBookingSuccess();
-            resetForm(); // Reset the form after successful booking
-            fetchAvailableCars(); // Refresh available cars after booking
+            resetForm();
+            fetchAvailableCars();
         } catch (error) {
             setLoading(false);
             console.error('Error submitting booking:', error.response ? error.response.data : error.message);
@@ -215,6 +211,16 @@ const BookingForm = ({ onBookingSuccess }) => {
                     <option value="Vaibhav">Vaibhav</option>
                     <option value="Sushil">Sushil</option>
                 </select>
+            </div>
+            <div className="form-group">
+                <label>Test Drive Location</label>
+                <input 
+                    type="text" 
+                    value={location} 
+                    onChange={(e) => setLocation(e.target.value)} 
+                    placeholder="Enter test drive location" 
+                    required 
+                />
             </div>
             <button type="submit" disabled={loading}>
                 {loading ? 'Booking...' : 'Book Test Drive'}

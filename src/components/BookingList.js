@@ -4,7 +4,6 @@ import './BookingList.css';
 
 const BookingList = ({ refreshTrigger }) => {
     const [bookings, setBookings] = useState([]);
-    const [sortOrder, setSortOrder] = useState('asc');
     const [filter, setFilter] = useState('');
 
     useEffect(() => {
@@ -16,15 +15,11 @@ const BookingList = ({ refreshTrigger }) => {
                 console.error('Error fetching bookings:', error);
             }
         };
+
         fetchBookings();
     }, [refreshTrigger]);
 
-    const sortedBookings = [...bookings].sort((a, b) => {
-        if (sortOrder === 'asc') {
-            return new Date(a.date) - new Date(b.date);
-        }
-        return new Date(b.date) - new Date(a.date);
-    });
+    const sortedBookings = [...bookings].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     const filteredBookings = sortedBookings.filter(booking =>
         booking.carModel.toLowerCase().includes(filter.toLowerCase())
@@ -41,20 +36,32 @@ const BookingList = ({ refreshTrigger }) => {
                     onChange={(e) => setFilter(e.target.value)}
                     className="filter-input"
                 />
-                <button onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')} className="sort-button">
-                    Sort by Date ({sortOrder === 'asc' ? 'Ascending' : 'Descending'})
-                </button>
             </div>
             <ul>
                 {filteredBookings.length > 0 ? (
                     filteredBookings.map((booking) => (
-                        <li key={booking._id}>
+                        <li key={booking._id} className="booking-item">
                             <div className="booking-details">
-                                <span className="booking-date">{booking.date}</span> - 
-                                <span className="booking-car">{booking.carModel}</span> booked by 
-                                <span className="booking-consultant">{booking.consultantName}</span> 
-                                from <span className="booking-time">{booking.startTime}</span> to 
-                                <span className="booking-time">{booking.endTime}</span>
+                                <div className="booking-detail">
+                                    <span className="detail-label">Date:</span> 
+                                    <span className="detail-value">{new Date(booking.date).toLocaleDateString()}</span>
+                                </div>
+                                <div className="booking-detail">
+                                    <span className="detail-label">Car Model:</span> 
+                                    <span className="detail-value">{booking.carModel}</span>
+                                </div>
+                                <div className="booking-detail">
+                                    <span className="detail-label">Sales Consultant:</span> 
+                                    <span className="detail-value">{booking.consultantName}</span>
+                                </div>
+                                <div className="booking-detail">
+                                    <span className="detail-label">Location:</span> 
+                                    <span className="detail-value">{booking.location}</span>
+                                </div>
+                                <div className="booking-detail booking-time-box">
+                                    <span className="detail-label">Time:</span> 
+                                    <span className="detail-value">{booking.startTime} - {booking.endTime}</span>
+                                </div>
                             </div>
                         </li>
                     ))
