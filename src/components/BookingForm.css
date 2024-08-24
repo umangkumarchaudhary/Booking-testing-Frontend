@@ -99,3 +99,15 @@ button:disabled {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+
+/* BookingForm.css */
+.clock-time-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.time-display {
+    margin-top: 10px;
+    font-size: 1.2em;
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './BookingForm.css';
 
@@ -11,9 +11,52 @@ const BookingForm = ({ onBookingSuccess }) => {
     const [carOptions, setCarOptions] = useState([
         'A200', 'A200d', 'C200', 'C220d', 'E200', 
         'E220d', 'E350d', 'S350d', 'S450'
-    ]);
+    ].map(car => ({ name: car, unavailable: false })));
     const [timeOptions, setTimeOptions] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    // Function to reset form state
+    const resetForm = () => {
+        setDate('');
+        setStartTime('');
+        setEndTime('');
+        setCarModel('');
+        setConsultantName('');
+    };
+
+    // Memoized fetchAvailableCars function using useCallback
+    const fetchAvailableCars = useCallback(async () => {
+        try {
+            const { data } = await axios.get('https://booking-testing-backend.onrender.com/api/bookings');
+            
+            const bookedCars = data.filter(booking => {
+                const bookingDate = booking.date;
+                const bookingStartTime = booking.startTime;
+                const bookingEndTime = booking.endTime;
+
+                const selectedStart = new Date(`${date}T${startTime}`);
+                const selectedEnd = new Date(`${date}T${endTime}`);
+                const existingStart = new Date(`${bookingDate}T${bookingStartTime}`);
+                const existingEnd = new Date(`${bookingDate}T${bookingEndTime}`);
+
+                // Check if the selected time range overlaps with any existing bookings
+                return bookingDate === date && (
+                    (selectedStart >= existingStart && selectedStart < existingEnd) || 
+                    (selectedEnd > existingStart && selectedEnd <= existingEnd) || 
+                    (selectedStart <= existingStart && selectedEnd >= existingEnd)
+                );
+            }).map(booking => booking.carModel);
+
+            setCarOptions(prevOptions =>
+                prevOptions.map(car => ({
+                    name: car.name,
+                    unavailable: bookedCars.includes(car.name)
+                }))
+            );
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+        }
+    }, [date, startTime, endTime]);
 
     useEffect(() => {
         const generateTimeOptions = () => {
@@ -23,8 +66,8 @@ const BookingForm = ({ onBookingSuccess }) => {
             const currentMinute = now.getMinutes();
             const selectedDate = new Date(date);
 
-            let startHour = 9; // Start at 9 AM
-            let endHour = 19; // End at 7 PM
+            let startHour = 1; 
+            let endHour = 24; 
 
             if (selectedDate.toDateString() === now.toDateString()) {
                 startHour = currentHour;
@@ -50,40 +93,37 @@ const BookingForm = ({ onBookingSuccess }) => {
 
     useEffect(() => {
         if (date && startTime && endTime) {
-            const fetchAvailableCars = async () => {
-                try {
-                    const { data } = await axios.get('https://booking-testing-backend.onrender.com/api/bookings');
-                    const bookedCars = data.filter(
-                        booking => booking.date === date &&
-                        (booking.startTime < endTime && booking.endTime > startTime)
-                    ).map(booking => booking.carModel);
-                    
-                    setCarOptions(prevOptions =>
-                        prevOptions.map(car => bookedCars.includes(car) ? `${car} (unavailable)` : car)
-                    );
-                } catch (error) {
-                    console.error('Error fetching bookings:', error);
-                }
-            };
             fetchAvailableCars();
         }
-    }, [date, startTime, endTime]);
+    }, [date, startTime, endTime, fetchAvailableCars]);
 
     const submitHandler = async (e) => {
         e.preventDefault();
-
-        if (new Date(date) < new Date()) {
-            alert('You cannot book a car for a past date.');
+    
+        // Check if date and time fields are filled
+        if (!date || !startTime || !endTime) {
+            alert('Please fill in all date and time fields.');
             return;
         }
-
+    
+        const selectedDateTime = new Date(`${date}T${startTime}`);
+        const currentDateTime = new Date();
+        currentDateTime.setSeconds(0, 0); // Reset seconds and milliseconds for accurate comparison
+    
+        // Check if selectedDateTime is in the past
+        if (selectedDateTime <= currentDateTime) {
+            alert('You cannot book a car for a past time.');
+            return;
+        }
+    
+        // Check if endTime is later than startTime
         if (startTime >= endTime) {
             alert('End time must be later than start time.');
             return;
         }
-
+    
         setLoading(true);
-
+    
         try {
             await axios.post('https://booking-testing-backend.onrender.com/api/bookings', {
                 date,
@@ -95,14 +135,15 @@ const BookingForm = ({ onBookingSuccess }) => {
             setLoading(false);
             alert('Booking successful!');
             onBookingSuccess();
+            resetForm(); // Reset the form after successful booking
             fetchAvailableCars(); // Refresh available cars after booking
         } catch (error) {
             setLoading(false);
-            console.error('Error submitting booking:', error);
+            console.error('Error submitting booking:', error.response ? error.response.data : error.message);
             alert('Car is already booked for this time.');
         }
     };
-
+    
     return (
         <form onSubmit={submitHandler}>
             <div className="form-group">
@@ -148,8 +189,12 @@ const BookingForm = ({ onBookingSuccess }) => {
                 <select value={carModel} onChange={(e) => setCarModel(e.target.value)} required>
                     <option value="">Select Car Model</option>
                     {carOptions.map((car) => (
-                        <option key={car} value={car.includes('(unavailable)') ? '' : car} disabled={car.includes('(unavailable)')}>
-                            {car}
+                        <option 
+                            key={car.name} 
+                            value={car.unavailable ? '' : car.name} 
+                            disabled={car.unavailable}
+                        >
+                            {car.name} {car.unavailable ? '(unavailable)' : ''}
                         </option>
                     ))}
                 </select>
