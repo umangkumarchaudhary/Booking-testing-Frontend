@@ -6,10 +6,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px 20px;
+    padding: 5px 10px; /* Adjust padding to make the header smaller */
     position: relative;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    height: 80px; /* Adjust height as needed */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Reduce shadow size */
+    height: 60px; /* Adjust height as needed */
     width: 100vw; /* Full width of viewport */
     overflow: hidden; /* Hide overflow to prevent unwanted scrollbars */
 }
@@ -28,13 +28,13 @@
 }
 
 .nav li {
-    margin: 0 30px; /* Space between navigation items, adjust as needed */
+    margin: 0 15px; /* Space between navigation items, adjust as needed */
 }
 
 .nav-link {
     color: white;
     text-decoration: none;
-    font-size: 18px;
+    font-size: 16px; /* Adjust font size for smaller header */
     font-weight: bold;
     transition: color 0.3s;
 }
@@ -43,44 +43,29 @@
     color: #ffeb3b; /* Highlight color on hover */
 }
 
-.menu-toggle {
-    display: none;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    margin-left: 20px;
-}
-
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .nav {
-        flex-direction: column;
-        position: absolute;
-        top: 60px;
-        right: 0;
-        background-color: #007bff;
-        width: 100%;
-        transition: max-height 0.3s ease-out;
-        max-height: 0;
-        overflow: hidden;
-        z-index: 10;
-    }
-
-    .nav.open {
-        max-height: 300px; /* Adjust as needed */
+    .header {
+        height: auto; /* Adjust height to fit content */
+        padding: 10px; /* Add more padding for smaller screens */
     }
 
     .nav ul {
-        flex-direction: column;
-        padding: 0;
+        flex-direction: column; /* Stack items vertically on small screens */
+        align-items: center; /* Center items horizontally */
     }
 
     .nav li {
-        margin: 10px 0; /* Space between items in mobile view */
+        margin: 10px 0; /* Adjust spacing between items on small screens */
     }
 
-    .menu-toggle {
-        display: block;
+    .nav-link {
+        font-size: 14px; /* Smaller font size for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-link {
+        font-size: 12px; /* Further reduce font size on very small screens */
     }
 }

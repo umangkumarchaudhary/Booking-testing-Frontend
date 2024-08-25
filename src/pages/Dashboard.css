@@ -1,41 +1,31 @@
 .dashboard {
     padding: 20px;
+    background: #f4f4f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.calendar {
+.dashboard h2 {
+    color: #333;
+    font-size: 24px;
     margin-bottom: 20px;
-}
-
-.graph {
-    margin-top: 20px;
-}
-
-.calendar {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.calendar th, .calendar td {
-    border: 1px solid #ccc;
     text-align: center;
-    padding: 8px;
 }
 
-.calendar th {
-    background-color: #f4f4f4;
+.recharts-tooltip-wrapper {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
-.time-slot {
-    height: 40px; /* Adjust height as needed */
-    position: relative;
+.recharts-tooltip-label {
+    color: #666;
 }
 
-.booking-block {
-    background-color: #4caf50;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
+.recharts-tooltip-item {
+    color: #888;
+}
+
+.recharts-bar {
+    border-radius: 4px;
 }

@@ -1,68 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import Calendar from 'react-calendar';  // Assuming you're using 'react-calendar' package
 import axios from 'axios';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import './Dashboard.css';
 
-const Dashboard = () => {
-    const [date, setDate] = useState(new Date());
+const Dashboard = ({ refreshTrigger }) => {
     const [bookings, setBookings] = useState([]);
 
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const formattedDate = date.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
-                const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/bookings?date=${formattedDate}`);
+                const { data } = await axios.get('https://booking-testing-backend.onrender.com/api/bookings');
                 setBookings(data);
             } catch (error) {
                 console.error('Error fetching bookings:', error);
             }
         };
+
         fetchBookings();
-    }, [date]);
+    }, [refreshTrigger]);
 
-    const carModels = ['A200', 'C200', 'E350']; // Add all your car models here
-    const timeSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00']; // 30-minute intervals
+    // Get today's date in 'YYYY-MM-DD' format
+    const today = new Date().toISOString().split('T')[0];
 
-    const isTimeSlotBooked = (slot, booking) => {
-        const slotTime = parseInt(slot.replace(':', ''), 10);
-        const startTime = parseInt(booking.startTime.replace(':', ''), 10);
-        const endTime = parseInt(booking.endTime.replace(':', ''), 10);
+    // Filter bookings for today
+    const todaysBookings = bookings.filter(booking => 
+        new Date(booking.date).toISOString().split('T')[0] === today
+    );
 
-        return slotTime >= startTime && slotTime < endTime;
-    };
+    // Prepare data for the graph
+    const graphData = todaysBookings.map(booking => {
+        const startTime = new Date(`1970-01-01T${booking.startTime}:00`);
+        const endTime = new Date(`1970-01-01T${booking.endTime}:00`);
+        const startMinutes = startTime.getHours() * 60 + startTime.getMinutes(); // Convert to minutes
+        const endMinutes = endTime.getHours() * 60 + endTime.getMinutes(); // Convert to minutes
+        const duration = endMinutes - startMinutes; // Duration in minutes
+
+        return {
+            carModel: booking.carModel,
+            startTimeMinutes: startMinutes,
+            duration, // Duration in minutes
+            startTimeLabel: startTime.toTimeString().slice(0, 5), // 24-hour format
+            endTimeLabel: endTime.toTimeString().slice(0, 5), // 24-hour format
+        };
+    });
 
     return (
         <div className="dashboard">
-            <Calendar onChange={setDate} value={date} />
-            <div className="graph">
-                <table className="calendar">
-                    <thead>
-                        <tr>
-                            <th>Car Model</th>
-                            {timeSlots.map((slot, index) => (
-                                <th key={index}>{slot}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {carModels.map((model, i) => (
-                            <tr key={i}>
-                                <td>{model}</td>
-                                {timeSlots.map((slot, j) => (
-                                    <td key={j} className="time-slot">
-                                        {bookings.map((booking, k) => (
-                                            booking.carModel === model && 
-                                            isTimeSlotBooked(slot, booking) ? (
-                                                <div key={k} className="booking-block"></div>
-                                            ) : null
-                                        ))}
-                                    </td>
-                                ))}
-                            </tr>
+            <h2>Today's Bookings</h2>
+            <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={graphData} layout="vertical" barCategoryGap="20%">
+                    <XAxis 
+                        type="number" 
+                        domain={[0, 24 * 60]} // This sets the domain from 0 to 1440 minutes (24 hours)
+                        tickFormatter={(tick) => {
+                            const hours = Math.floor(tick / 60);
+                            const minutes = tick % 60;
+                            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`; // 24-hour format
+                        }}
+                        label={{ value: 'Time', position: 'insideBottomRight', offset: -10 }}
+                        ticks={Array.from({ length: 25 }, (_, i) => i * 60)} // Ticks every hour from 0 to 24
+                    />
+                    <YAxis type="category" dataKey="carModel" />
+                    <Tooltip 
+                        labelFormatter={(label) => {
+                            if (label === undefined) return '';
+                            const hours = Math.floor(label / 60);
+                            const minutes = label % 60;
+                            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`; // 24-hour format
+                        }}
+                        formatter={(value, name, props) => {
+                            if (!props.payload || props.payload.startTimeLabel === undefined || props.payload.endTimeLabel === undefined) {
+                                return '';
+                            }
+                            const timeLabel = `${props.payload.startTimeLabel} - ${props.payload.endTimeLabel}`;
+                            return timeLabel;
+                        }}
+                    />
+                    <Bar 
+                        dataKey="duration" 
+                        fill="#8884d8"
+                        background={{ fill: '#eee' }}
+                        isAnimationActive={false}
+                    >
+                        {graphData.map((entry, index) => (
+                            <Cell 
+                                key={`cell-${index}`} 
+                                fill="#8884d8"
+                                x={entry.startTimeMinutes} // Adjust the x position by the start time
+                                width={entry.duration} 
+                            />
                         ))}
-                    </tbody>
-                </table>
-            </div>
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
         </div>
     );
 };
